@@ -10,7 +10,7 @@ SwashbucklerDiaryExportJson_(日期)_(版本).zip
 
 (日期)@(时间).esm
 
-心事卷轴（版本`1.0.0-beta03`）的导出文件  
+EmoScroll（版本`1.0.0-beta05`）的导出文件  
 （实质上是zip压缩包）
 
 里面的数据库文件是 SQLite format 3，目前这个版本没有做加密
