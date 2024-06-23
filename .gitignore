@@ -1,0 +1,36 @@
+# Python specific
+*.pyc
+*.pyo
+__pycache__/
+
+# IDE specific
+.vscode/
+.idea/
+
+# Compiled files
+*.pyd
+*.pyw
+*.pyz
+*.pyzw
+*.exe
+
+# Logs and databases
+*.log
+*.db
+
+# Virtual environment
+.venv/
+
+# Runtime
+chrome-win/
+
+# Temporary folders
+*tmp/
+
+# Sample Files
+samples/
+
+# Personal Files
+cookies.json
+*.zip
+*.esm
