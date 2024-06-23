@@ -14,7 +14,3 @@
 - [x] [EmoScroll](https://github.com/Sakawish/Universe)
 - [ ] QQ Zone ~~什么原来这是日记软件吗~~
 - [x] [iCity](https://icity.ly/)
-
----
-
-如果有侵犯到您的权利，请联系我，我会马上将这个仓库切到私有 🙏
