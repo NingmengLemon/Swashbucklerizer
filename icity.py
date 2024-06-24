@@ -135,8 +135,7 @@ def main():
     export(diarylist, "./export_%d.zip" % (round(time.time())))
     browser.quit()
     input("All Done! Press enter to exit.")
-    return 0
 
 
 if __name__ == "__main__":
-    exit(main())
+    main()
