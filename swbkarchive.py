@@ -1,15 +1,19 @@
-import zipfile
 import os
 import json
 import time
 from typing import Optional
 import uuid
 import shutil
-import tempfile
 import hashlib
 
-from utils import *
-from swbkenum import *
+from utils import (
+    md5_from_io,
+    timestamp_to_iso8601_no_timezone,
+    open_unique,
+    walk_compress,
+    timestamp_to_iso8601,
+)
+from swbkenum import MediaType, Mood
 
 
 class Media:
@@ -57,7 +61,7 @@ class Diary:
         self.uuid = uuid_ if uuid_ else str(uuid.uuid4())
         self.content: str = content if content else ""
         self.medias: list[Media] = []
-        self.mood: Mood = None
+        self.mood: Mood | None = None
 
     def add_media(self, media: Media):
         self.medias += [media]
@@ -94,11 +98,11 @@ class SwbkArchive:
             for media in diary.medias:
                 fname = media.filename
                 type_ = {
-                    MediaType.UNKNOWN: None,
+                    MediaType.UNKNOWN: "Unknown",
                     MediaType.AUDIO: "Audio",
                     MediaType.IMAGE: "Image",
                     MediaType.VIDEO: "Video",
-                }.get(media.type)
+                }.get(media.type, "Unknown")
                 fpath = os.path.join(path, "appdata", type_, fname)
                 if not type_:
                     continue
@@ -113,7 +117,7 @@ class SwbkArchive:
                     shutil.copy(media.content, fpath)
                 resources.append(
                     {
-                        "ResourceUri": "appdata/%s/%s" % (type_, fname),
+                        "ResourceUri": f"appdata/{type_}/{fname}",
                         "ResourceType": media.type.value,
                     }
                 )
@@ -136,7 +140,7 @@ class SwbkArchive:
                     path,
                     time.strftime("%Y-%m-%d", time.localtime(diary.time)) + ".json",
                 ),
-                "w+",
+                mode="w+",
                 encoding="utf-8",
             ) as f:
                 json.dump(diary_data, f, ensure_ascii=False, indent=2)
@@ -173,7 +177,7 @@ def test():
         archive.add_diary(d)
         # 注意，添加媒体之后要在日记内容中添加引用才能在日记中显示出来
         # 路径为 appdata/(类型)/(文件md5).(文件后缀)
-    archive.export_as_zipfile("./test_%d.zip" % (round(time.time())))
+    archive.export_as_zipfile(f"./test_{round(time.time())}.zip")
 
 
 if __name__ == "__main__":

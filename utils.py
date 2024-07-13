@@ -2,7 +2,6 @@ import os
 import hashlib
 import zipfile
 import sqlite3
-import json
 from typing import BinaryIO
 from datetime import datetime, timezone, timedelta
 
@@ -82,7 +81,7 @@ def export_all_tables(db_path):
 
 def walk_compress(path: str, save_as: str):
     with zipfile.ZipFile(save_as, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             for file in files:
                 file_path = os.path.join(root, file)
                 zipf.write(file_path, os.path.relpath(file_path, path))
@@ -100,7 +99,7 @@ def get_image_ext(file_path):
     try:
         with Image.open(file_path) as img:
             return img.format.lower()
-    except Exception as e:
+    except Exception:
         return None
 
 
@@ -108,11 +107,13 @@ def get_ext_ffmpeg(file_path):
     try:
         probe = ffmpeg.probe(file_path)
         return probe["format"]["format_name"].split(",")[0]
-    except Exception as e:
+    except Exception:
         return None
 
 
-def open_unique(file, mode, **kwargs):
+def open_unique(file, **kwargs):
+    if "encoding" not in kwargs:
+        kwargs["encoding"] = "utf-8"
     directory, filename = os.path.split(file)
     if not directory:
         directory = "."
@@ -126,7 +127,7 @@ def open_unique(file, mode, **kwargs):
 
     unique_filepath = os.path.join(directory, unique_filename)
 
-    return open(unique_filepath, mode=mode, **kwargs)
+    return open(unique_filepath, **kwargs)
 
 
 def timestamp_to_iso8601(timestamp: float | int):
@@ -146,6 +147,3 @@ def timestamp_to_iso8601_no_timezone(timestamp):
     # 格式化为所需格式的字符串，不带时区信息
     iso8601_str = dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
     return iso8601_str
-
-
-pass

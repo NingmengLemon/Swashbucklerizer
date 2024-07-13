@@ -1,3 +1,9 @@
+import hashlib
+import json
+import time
+import os
+import re
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -5,14 +11,6 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
 import requests
-
-import hashlib
-import json
-import typing
-from datetime import datetime, timezone
-import time
-import os
-import re
 
 from swbkarchive import Media, MediaType, Diary, SwbkArchive
 
@@ -49,7 +47,7 @@ def is_logined(brw: webdriver.Chrome):
 
 
 def get_page(brw: webdriver.Chrome, page: int = 1) -> list[WebElement]:
-    brw.get("https://icity.ly/?page=%d" % page)
+    brw.get(f"https://icity.ly/?page={page}")
     time.sleep(1)
     try:
         brw.find_element(by=By.XPATH, value="/html/body/div[2]/div[2]/div/div/div")
@@ -70,16 +68,21 @@ def element_to_diary(element: WebElement) -> Diary:
     except NoSuchElementException:
         photo_urls = []
     else:
-        photo_urls = [
-            re.sub(r"/\d+x\d+$", "", e.get_attribute("src"), 1)
+        srcs = [
+            e.get_attribute("src")
             for e in photo_bar.find_elements(by=By.TAG_NAME, value="img")
         ]
+        photo_urls = [re.sub(r"/\d+x\d+$", "", src, 1) for src in srcs if src]
     pubtime_str = element.find_element(by=By.TAG_NAME, value="time").get_attribute(
         "datetime"
     )
-    pubtime = (
-        time.mktime(time.strptime(pubtime_str, "%Y-%m-%dT%H:%M:%SZ")) - time.timezone
-    )
+    if pubtime_str:
+        pubtime = (
+            time.mktime(time.strptime(pubtime_str, "%Y-%m-%dT%H:%M:%SZ"))
+            - time.timezone
+        )
+    else:
+        pubtime = 0
     photos = [
         (
             requests.get(
@@ -88,6 +91,7 @@ def element_to_diary(element: WebElement) -> Diary:
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.74 Safari/537.36 Edg/79.0.309.43",
                     "Referer": "https://icity.ly/",
                 },
+                timeout=10,
             ).content,
             url,
         )
@@ -98,7 +102,7 @@ def element_to_diary(element: WebElement) -> Diary:
     text = text.replace("\n", "  \n")
     for p, u in photos:
         filename = hashlib.md5(p).hexdigest() + "." + u.split(".")[-1]
-        text += "\n\n![Image %d](appdata/Image/%s)" % (counter, filename)
+        text += f"\n\n![Image {counter}](appdata/Image/{filename})"
         counter += 1
         diary.add_media(Media(p, MediaType.IMAGE, u.split(".")[-1]))
 
@@ -125,14 +129,14 @@ def main():
     save_cookies(browser, "./cookies.json")
     browser.get("https://icity.ly/?page=1")
     diarylist: list[Diary] = []
-    page_container = ["Not Empty"]
+    page_container: list[WebElement] = []
     page = 1
-    while page_container:
+    while page_container or page == 1:
         print("Handling page", page)
         page_container = get_page(browser, page=page)
         diarylist += [element_to_diary(e) for e in page_container]
         page += 1
-    export(diarylist, "./export_%d.zip" % (round(time.time())))
+    export(diarylist, f"./export_{round(time.time())}.zip")
     browser.quit()
     input("All Done! Press enter to exit.")
 

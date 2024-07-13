@@ -20,7 +20,7 @@ emo2mood = {
 
 def load_from_db(
     dbfile: str,
-) -> tuple[list[dict], list[dict], dict[str, str], dict[str, str]]:
+) -> tuple[list[dict], list[dict], dict[str, dict], dict[str, str]]:
     data = export_all_tables(db_path=dbfile)
     return (
         data.get("Emo", []),
@@ -58,7 +58,7 @@ def convert(esmfile: str, save_as: str):
             )
 
         if emo["emoId"] in songref:
-            song = songs[songref[emo["emoId"]]]
+            song: dict = songs[songref[emo["emoId"]]]
             imgfile = os.path.join(tmpfolder, "songs", song["songId"])
             ext = get_image_ext(imgfile)
             d.add_media(Media(content=imgfile, type_=MediaType.IMAGE, ext=ext))
