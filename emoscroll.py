@@ -1,11 +1,11 @@
-from utils import *
-from swbkarchive import Media, Diary, SwbkArchive
-from swbkenum import Mood, MediaType
-from esmenum import Emotion
-
 import os
 import time
 import shutil
+
+from utils import export_all_tables, extract_zip, get_image_ext
+from swbkarchive import Media, Diary, SwbkArchive
+from swbkenum import Mood, MediaType
+from esmenum import Emotion
 
 emo2mood = {
     Emotion.JOY: Mood.HAPPY,
@@ -47,7 +47,7 @@ def convert(esmfile: str, save_as: str):
         text = emo["content"].replace("\n", "  \n")
         d = Diary(time_=emo["createTime"] / 1000, uuid_=emo["emoId"])
 
-        for img in filter(lambda item: item["emoId"] == emo["emoId"], imgs):
+        for img in [i for i in imgs if i["emoId"] == emo["emoId"]]:
             imgfile = os.path.join(tmpfolder, "images", img["imageId"])
             ext = get_image_ext(imgfile)
             d.add_media(Media(content=imgfile, type_=MediaType.IMAGE, ext=ext))

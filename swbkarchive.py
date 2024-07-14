@@ -12,6 +12,7 @@ from utils import (
     open_unique,
     walk_compress,
     timestamp_to_iso8601,
+    get_file_ext_filetype,
 )
 from swbkenum import MediaType, Mood
 
@@ -32,6 +33,9 @@ class Media:
             _, ext = os.path.splitext(content)
             if len(ext) > 1:
                 self.extension = ext[1:]
+            if self.extension == "unknown":
+                if ext_guess := get_file_ext_filetype(content):
+                    self.extension = ext_guess
 
     @staticmethod
     def md5_from_file(path):

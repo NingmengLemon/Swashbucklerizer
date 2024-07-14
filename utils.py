@@ -6,11 +6,11 @@ from typing import BinaryIO
 from datetime import datetime, timezone, timedelta
 
 from PIL import Image
-import ffmpeg
+import filetype
 
 __all__ = [
     "md5_from_io",
-    "get_ext_ffmpeg",
+    "get_file_ext_filetype",
     "get_image_ext",
     "open_unique",
     "timestamp_to_iso8601",
@@ -103,10 +103,9 @@ def get_image_ext(file_path):
         return None
 
 
-def get_ext_ffmpeg(file_path):
+def get_file_ext_filetype(file_path):
     try:
-        probe = ffmpeg.probe(file_path)
-        return probe["format"]["format_name"].split(",")[0]
+        return filetype.guess_extension(file_path)
     except Exception:
         return None
 
@@ -127,7 +126,7 @@ def open_unique(file, **kwargs):
 
     unique_filepath = os.path.join(directory, unique_filename)
 
-    return open(unique_filepath, **kwargs)
+    return open(unique_filepath, **kwargs) # pylint: disable=W1514
 
 
 def timestamp_to_iso8601(timestamp: float | int):
